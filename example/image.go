@@ -15,15 +15,21 @@ import (
 
 func main() {
 	var (
-		r      io.Reader
-		file   string
-		width  int
-		height int
+		r         io.Reader
+		file      string
+		width     int
+		height    int
+		threshold int
 	)
 	flag.StringVar(&file, "f", "", "the file to open, otherwise STDIN is used")
 	flag.IntVar(&width, "w", 160, "the width in dots, characters is 2 dots wide")
 	flag.IntVar(&height, "h", 0, "the height in characters, characters are 4 dots high, defaults to preserving aspect ratio with width")
+	flag.IntVar(&threshold, "t", 100, "the saturation threshold for pixel toggling, 0-255")
 	flag.Parse()
+
+	if threshold < 0 || threshold > 255 {
+		log.Fatalf("threshold must be between 0 and 255")
+	}
 
 	if file != "" {
 		f, err := os.Open(file)
@@ -51,7 +57,7 @@ func main() {
 		width,
 		height,
 		func(img image.Image, bounds image.Rectangle) bool {
-			return dot.Saturation(dot.AverageColor(img, bounds)) > 50
+			return dot.Saturation(dot.MostCommonColor(img, bounds)) > uint8(threshold)
 		},
 	)))
 }
