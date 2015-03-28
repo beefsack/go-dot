@@ -34,6 +34,8 @@ func FromImage(img image.Image, width, height int, p Pixeler) [][]bool {
 
 type Pixeler func(img image.Image, bounds image.Rectangle) bool
 
+type ColorFilterer func(c color.Color) bool
+
 func MostCommonColor(img image.Image, bounds image.Rectangle) color.Color {
 	max := color.Color(color.RGBA{})
 	maxCount := 0
@@ -73,6 +75,26 @@ func AverageColor(img image.Image, bounds image.Rectangle) color.Color {
 		uint8(b / num),
 		uint8(a / num),
 	}
+}
+
+func ColorFilterPerc(
+	img image.Image,
+	bounds image.Rectangle,
+	filter ColorFilterer,
+) float64 {
+	total := uint64(bounds.Dx() * bounds.Dy())
+	if total == 0 {
+		return 0
+	}
+	num := 0
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			if filter(img.At(x, y)) {
+				num++
+			}
+		}
+	}
+	return float64(num) / float64(total)
 }
 
 func Saturation(c color.Color) uint8 {

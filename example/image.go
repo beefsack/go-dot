@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"image"
+	"image/color"
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
@@ -19,16 +20,16 @@ func main() {
 		file      string
 		width     int
 		height    int
-		threshold int
+		threshold float64
 	)
 	flag.StringVar(&file, "f", "", "the file to open, otherwise STDIN is used")
 	flag.IntVar(&width, "w", 160, "the width in dots, characters is 2 dots wide")
 	flag.IntVar(&height, "h", 0, "the height in characters, characters are 4 dots high, defaults to preserving aspect ratio with width")
-	flag.IntVar(&threshold, "t", 100, "the saturation threshold for pixel toggling, 0-255")
+	flag.Float64Var(&threshold, "t", 0.3, "the pixel fill threshold percentage, 0.0-1.0")
 	flag.Parse()
 
-	if threshold < 0 || threshold > 255 {
-		log.Fatalf("threshold must be between 0 and 255")
+	if threshold < 0 || threshold > 1 {
+		log.Fatalf("threshold must be between 0.0 and 1.0")
 	}
 
 	if file != "" {
@@ -57,7 +58,9 @@ func main() {
 		width,
 		height,
 		func(img image.Image, bounds image.Rectangle) bool {
-			return dot.Saturation(dot.MostCommonColor(img, bounds)) > uint8(threshold)
+			return dot.ColorFilterPerc(img, bounds, func(c color.Color) bool {
+				return dot.Saturation(c) > 0
+			}) > threshold
 		},
 	)))
 }
