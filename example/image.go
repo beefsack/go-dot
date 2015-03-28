@@ -59,7 +59,8 @@ func main() {
 		height,
 		func(img image.Image, bounds image.Rectangle) bool {
 			return dot.ColorFilterPerc(img, bounds, func(c color.Color) bool {
-				return dot.Saturation(c) > 0
+				_, _, _, a := c.RGBA()
+				return a > 200 && dot.Saturation(c) < 50
 			}) > threshold
 		},
 	)))

@@ -98,6 +98,6 @@ func ColorFilterPerc(
 }
 
 func Saturation(c color.Color) uint8 {
-	r, g, b, a := c.RGBA()
-	return uint8((r + g + b) / 3 * a / 256)
+	r, g, b, _ := c.RGBA()
+	return uint8((r + g + b) / 3)
 }
